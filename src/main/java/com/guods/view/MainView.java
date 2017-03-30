@@ -74,8 +74,9 @@ public class MainView extends JFrame {
 				}).start();
 			}
 		});
-		outPut = new JTextArea(10, 20);
+		outPut = new JTextArea(10, 30);
 		outPut.setEditable(true);
+//		outPut.setLineWrap(true);
 		scroll = new JScrollPane(outPut);
 	}
 
@@ -145,9 +146,8 @@ public class MainView extends JFrame {
     		document = myHttpClient.get(urlBuffer.toString());
     		//解析document，并获得公司页面列表
     		companyList = parser.parseListPage(document, excel);
-    		outPut.append(System.lineSeparator() + "第" + i + "页列表采集完成。。。");
+    		outPut.append(System.lineSeparator() + "第" + i + "页非会员采集完成。。。");
 			outPut.paintImmediately(getBounds());
-    		System.out.println("第" + i + "页列表采集完成。。。");
     		
     		//如果有公司url，读取公司页面，解析公司页面获取公司页面的联系人信息
     		if (companyList != null && companyList.size() > 0) {
@@ -158,7 +158,12 @@ public class MainView extends JFrame {
 						Document companyDocument = myHttpClient.get(url);
 						long time2 = System.currentTimeMillis();
 //						System.out.println("time1:" + (time2 - time1));
-						parser.parseCompanyPage(companyDocument, companyExcel);
+						int parserResult = parser.parseCompanyPage(companyDocument, companyExcel);
+						if (parserResult == 0) {
+							outPut.append(System.lineSeparator() + "会员企业网址获取联系人信息错误，请用浏览器打开网址查看！");
+							outPut.append(System.lineSeparator() + url);
+							outPut.paintImmediately(getBounds());
+						}
 						long time3 = System.currentTimeMillis();
 //						System.out.println("time2:" + (time3 - time2));
 					}
@@ -166,14 +171,12 @@ public class MainView extends JFrame {
 			}
     		outPut.append(System.lineSeparator() + "第" + i + "页会员采集完成。。。");
 			outPut.paintImmediately(getBounds());
-    		System.out.println("第" + i + "页公司采集完成。。。");
 		}
     	//数据存档
     	excel.saveFile();
     	companyExcel.saveFile();
     	outPut.append(System.lineSeparator() + 
-    			"采集完成，列表总共:" + excel.size() + "条，会员总共" + companyExcel.size() + "条！");
+    			"采集完成，非会员总共:" + excel.size() + "条，会员总共" + companyExcel.size() + "条！");
 		outPut.paintImmediately(getBounds());
-    	System.out.println("采集完成！列表总共:" + excel.size() + "条，会员总共" + companyExcel.size() + "条！");
     }
 }

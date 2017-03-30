@@ -62,20 +62,20 @@ public class PageParser {
 	 * @param document
 	 * @param excel
 	 */
-	public void parseCompanyPage(Document document, Excel excel){
+	public int parseCompanyPage(Document document, Excel excel){
 		if (document == null) {
-			return;
+			return 1;
 		}
 		Elements modBoxs = document.getElementsByClass("mod-box");
 		if (modBoxs == null || modBoxs.size() == 0) {
-			return;
+			return 0;
 		}
 		String[] companyRowData = new String[7];
 		//联系人信息存放在modBox中的，解析每个modBox
 		for (Element modBox : modBoxs) {
 			Elements lis = modBox.getElementsByTag("li");
 			if (lis == null || lis.size() == 0) {
-				return;
+				return 1;
 			}
 			//取出每个li标签的字段信息
 			int min = lis.size() > companyRowData.length ? companyRowData.length : lis.size();
@@ -92,5 +92,6 @@ public class PageParser {
 				excel.insertRow(companyRowData);
 			}
 		}
+		return 1;
 	}
 }
