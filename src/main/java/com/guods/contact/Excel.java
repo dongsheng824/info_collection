@@ -21,6 +21,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  */
 public class Excel {
 
+	private String fileName;
 	private String filePath;
 	private XSSFWorkbook workbook;
 	private XSSFSheet sheet;
@@ -33,9 +34,10 @@ public class Excel {
 	 * @param sheetName sheet名
 	 * @param columnNames 第一行内容（标题）
 	 */
-	public Excel(String file, String sheetName, String[] columnNames) {
+	public Excel(String filePath, String fileName, String sheetName, String[] columnNames) {
 		super();
-		this.filePath = file;
+		this.filePath = filePath;
+		this.fileName = fileName;
 		newSheet(sheetName, columnNames);
 	}
 	/**
@@ -87,7 +89,11 @@ public class Excel {
 	 */
 	public void saveFile(){
 		try {
-			File file = new File(filePath);
+			File fileDir = new File(filePath);
+			File file = new File(filePath + fileName);
+			if (!fileDir.isDirectory()) {
+				fileDir.mkdir();
+			}
 			if (file.exists()) {
 				file.delete();
 			}
@@ -95,9 +101,11 @@ public class Excel {
 			FileOutputStream fileOutputStream = new FileOutputStream(file);
 			workbook.write(fileOutputStream);
 		} catch (FileNotFoundException e) {
-			System.out.println(filePath + "保存文件错误:" + e.getMessage());
+			e.printStackTrace();
+			System.out.println(filePath + fileName + "保存文件错误:" + e.getMessage());
 		} catch (IOException e) {
-			System.out.println(filePath + "保存文件错误:" + e.getMessage());
+			e.printStackTrace();
+			System.out.println(filePath + fileName + "保存文件错误:" + e.getMessage());
 		}
 	}
 	/**
