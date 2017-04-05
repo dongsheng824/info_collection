@@ -1,11 +1,16 @@
 package com.guods.contact;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.guods.toutiao.model.DataUnit;
+import com.guods.toutiao.model.ResponseObj;
 
 public class PageParser {
 
@@ -66,6 +71,10 @@ public class PageParser {
 		if (document == null) {
 			return 1;
 		}
+		Elements w_990 = document.getElementsByClass("w_990");
+		if (w_990 != null && w_990.size() > 0) {
+			return 2;
+		}
 		Elements modBoxs = document.getElementsByClass("mod-box");
 		if (modBoxs == null || modBoxs.size() == 0) {
 			return 0;
@@ -93,5 +102,55 @@ public class PageParser {
 			}
 		}
 		return 1;
+	}
+	
+	/**
+	 * 今日头条
+	 * @param document
+	 * @param excel
+	 * @param toutiaoCommCount
+	 * @param search
+	 * @return
+	 */
+	public boolean parseToutiao(Document document, Excel excel, int toutiaoCommCount, boolean search){
+		boolean tag = false;
+		if (document == null) {
+			return tag;
+		}
+		String text = document.body().text();
+		text = text.replace("abstract", "abstract0");
+		System.out.println(text);
+		ObjectMapper objectMapper = new ObjectMapper();
+		ResponseObj result = null;
+		try {
+			//解析json串
+			result = objectMapper.readValue(text, ResponseObj.class);
+			//获取数据，存excel
+			List<DataUnit> dataList = result.getData();
+			for (DataUnit dataUnit : dataList) {
+				Integer commentCount = dataUnit.getComments_count();
+				if (commentCount != null && commentCount >= toutiaoCommCount) {
+					String[] rowData = {dataUnit.getTitle(), "http://www.toutiao.com/" + dataUnit.getSource_url(),
+							commentCount.toString(), ""};
+					if (!excel.contains(rowData[1])) {
+						excel.insertRow(rowData);
+						tag = true;
+					}
+				}
+			}
+			//搜索单独处理
+			if (search ) {
+				if (result.getHas_more() != null && result.getHas_more() ) {
+					tag = true;
+				}else {
+					tag = false;
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			return tag;
+		}
+//		return result.getNext().getMax_behot_time().toString();
+		return tag;
 	}
 }

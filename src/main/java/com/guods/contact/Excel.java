@@ -116,4 +116,14 @@ public class Excel {
 		return rowCount;
 	}
 	
+	public boolean contains(String URL){
+		XSSFCell cell;
+		for (int i = 1; i < rowCount; i++) {
+			cell = sheet.getRow(i).getCell(1);
+			if (cell.getStringCellValue().equals(URL)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

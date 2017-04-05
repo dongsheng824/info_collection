@@ -1,6 +1,8 @@
 package com.guods.contact;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
@@ -27,6 +29,29 @@ public class MyHttpClient {
 				e1.printStackTrace();
 			}
 		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public Document jsonGet(String url){
+		Map<String, String> cookies = new HashMap<String, String>();
+		cookies.put("uuid", "w:d7dcefd0fde74bc8a90c0667364c5f30");
+		cookies.put("UM_distinctid", "15b23c7417a1ed-07781e3212b944-6a11157a-1fa400-15b23c7417b22b");
+		cookies.put("utm_source", "toutiao");
+		cookies.put("tt_webid", "57234957546");
+		cookies.put("_ga", "GA1.2.1673071305.1490953913");
+		try {
+			return Jsoup.connect(url)
+					.ignoreContentType(true)
+					.header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36")
+					.header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
+					.cookies(cookies)
+					.get();
+		}catch (HttpStatusException e0){
+			System.out.println(e0.getMessage());
+		}
+		catch (IOException e) {
 			e.printStackTrace();
 		}
 		return null;
