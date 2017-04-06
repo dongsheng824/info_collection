@@ -148,9 +148,7 @@ public class PageParser {
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-			return tag;
 		}
-//		return result.getNext().getMax_behot_time().toString();
 		return tag;
 	}
 }
