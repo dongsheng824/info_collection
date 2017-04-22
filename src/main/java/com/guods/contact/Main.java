@@ -13,7 +13,6 @@ public class Main
 				new MainView();
 			}
 		});
-    	
     }
     
 }

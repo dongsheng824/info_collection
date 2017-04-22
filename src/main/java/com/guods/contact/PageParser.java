@@ -112,7 +112,7 @@ public class PageParser {
 	 * @param search
 	 * @return
 	 */
-	public boolean parseToutiao(Document document, Excel excel, int toutiaoCommCount, boolean search){
+	public boolean parseToutiao(Document document, Excel excel, int toutiaoCommCount, boolean search, String keyword){
 		boolean tag = false;
 		if (document == null) {
 			return tag;
@@ -129,7 +129,8 @@ public class PageParser {
 			List<DataUnit> dataList = result.getData();
 			for (DataUnit dataUnit : dataList) {
 				Integer commentCount = dataUnit.getComments_count();
-				if (commentCount != null && commentCount >= toutiaoCommCount) {
+				if (commentCount != null && commentCount >= toutiaoCommCount
+						&& (dataUnit.getTitle().contains(keyword) || keyword == null || keyword.trim() == "")) {
 					String[] rowData = {dataUnit.getTitle(), "http://www.toutiao.com/" + dataUnit.getSource_url(),
 							commentCount.toString(), ""};
 					if (!excel.contains(rowData[1])) {

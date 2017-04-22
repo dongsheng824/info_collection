@@ -103,6 +103,7 @@ public class MainView extends JFrame {
 	@SuppressWarnings("unchecked")
 	private void initToutiaoElements() {
 		toutiaoType = new JComboBox();
+		toutiaoType.addItem("首页");
 		toutiaoType.addItem("家居");
 		toutiaoType.addItem("社会");
 		toutiaoType.addItem("搞笑");
@@ -125,6 +126,9 @@ public class MainView extends JFrame {
 				new Thread(new Runnable() {
 					String url = "http://www.toutiao.com/api/pc/feed/?category=__all__&utm_source=toutiao&widen=1&max_behot_time=1491359690&max_behot_time_tmp=1491359690&tadrequire=false&as=A195286EB455C9D&cp=58E4356CA92D7E1";
 					public void run() {
+						if (toutiaoType.getSelectedItem().toString().equals("首页")) {
+							url = "http://www.toutiao.com/api/pc/feed/?category=__all__&utm_source=toutiao&widen=1&max_behot_time=1491359690&max_behot_time_tmp=1491359690&tadrequire=false&as=A195286EB455C9D&cp=58E4356CA92D7E1";
+						};
 						if (toutiaoType.getSelectedItem().toString().equals("家居")) {
 							url = "http://www.toutiao.com/api/pc/feed/?category=news_home&utm_source=toutiao&widen=1&max_behot_time=1491352754&max_behot_time_tmp=1491352754&tadrequire=true&as=A155286E14A5718&cp=58E4F5674108DE1";
 						};
@@ -147,7 +151,8 @@ public class MainView extends JFrame {
 						toutiaoOutPut.paintImmediately(getBounds());
 						startWorkToutiao(Integer.valueOf(toutiaoCount.getText()), 
 								url, 
-								toutiaoFilePath.getText(), toutiaoFileName.getText(), Integer.valueOf(toutiaoCommCount.getText()));
+								toutiaoFilePath.getText(), toutiaoFileName.getText(), Integer.valueOf(toutiaoCommCount.getText()),
+								toutiaoKeyword.getText());
 						toutiaoButton.setText("重新采集");
 						toutiaoButton.setEnabled(true);
 						toutiaoButton.paintImmediately(getBounds());
@@ -373,7 +378,7 @@ public class MainView extends JFrame {
 		outPut.paintImmediately(getBounds());
 	}
 
-	public void startWorkToutiao(int count, String url, String filePath, String fileName, int toutiaoCommCount) {
+	public void startWorkToutiao(int count, String url, String filePath, String fileName, int toutiaoCommCount, String keyword) {
 		StringBuffer urlBuffer = new StringBuffer();
 		MyHttpClient myHttpClient = new MyHttpClient();
 		String preUrl;
@@ -406,7 +411,7 @@ public class MainView extends JFrame {
 					.append("&as=").append(asCp.getAs()).append("&cp=").append(asCp.getCp());
 				System.out.println(urlBuffer.toString());
 				document = myHttpClient.jsonGet(urlBuffer.toString());
-				tag = parser.parseToutiao(document, excel, toutiaoCommCount, false);
+				tag = parser.parseToutiao(document, excel, toutiaoCommCount, false, keyword);
 				if (tag) {
 					toutiaoOutPut.append(System.lineSeparator() + "已采到:" + (excel.size() - 1) + "条");
 					toutiaoOutPut.paintImmediately(getBounds());
@@ -448,7 +453,7 @@ public class MainView extends JFrame {
 					.append("&keyword=").append(keyword);
 				System.out.println(urlBuffer.toString());
 				document = myHttpClient.jsonGet(urlBuffer.toString());
-				hasMore = parser.parseToutiao(document, excel, toutiaoCommCount, true);
+				hasMore = parser.parseToutiao(document, excel, toutiaoCommCount, true, keyword);
 				if (hasMore) {
 					toutiaoOutPut.append(System.lineSeparator() + "已采到:" + (excel.size() - 1) + "条");
 					toutiaoOutPut.paintImmediately(getBounds());

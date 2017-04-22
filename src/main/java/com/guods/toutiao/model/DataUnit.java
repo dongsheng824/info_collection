@@ -127,7 +127,26 @@ public class DataUnit {
 	private String ala_src;
 	private List<String> tokens;
 	private Object display;
+	private String track_url;
+	private String ad_track_url;
+	
     
+	public String getAd_track_url() {
+		return ad_track_url;
+	}
+
+	public void setAd_track_url(String ad_track_url) {
+		this.ad_track_url = ad_track_url;
+	}
+
+	public String getTrack_url() {
+		return track_url;
+	}
+
+	public void setTrack_url(String track_url) {
+		this.track_url = track_url;
+	}
+
 	public Object getDisplay() {
 		return display;
 	}
