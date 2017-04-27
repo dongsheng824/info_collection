@@ -2,7 +2,9 @@ package com.guods.contact;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -151,5 +153,57 @@ public class PageParser {
 			e.printStackTrace();
 		}
 		return tag;
+	}
+	
+	public Map<String, String[]> parseGanjiList(Document document, Excel excel){
+		Map<String, String[]> noImgMap = new HashMap<String, String[]>();
+		//有图的直接提取数据
+		Elements listImgs = document.getElementsByClass("list-img");
+		for (Element img : listImgs) {
+			String[] rowData = new String[3];
+			Elements f14s = img.getElementsByClass("f14");
+			rowData[0] = f14s.get(0).text();// 标题
+			Elements websites = img.getElementsByClass("website");
+			rowData[1] = websites.get(0).text();// 名称
+			Elements JTelPhoneSpans = img.getElementsByClass("J_tel_phone_span");
+			rowData[2] = JTelPhoneSpans.get(0).text();// 电话
+			excel.insertRow(rowData);
+		}
+		//没图的返回地址，进入网站提取数据
+		Elements listNoImgs = document.getElementsByClass("list-noimg");
+		for (Element noImg : listNoImgs) {
+			String[] rowData = new String[4];
+			Elements f14s = noImg.getElementsByClass("f14");
+			rowData[0] = f14s.get(0).text();// 标题
+			noImgMap.put("http://hz.ganji.com" + f14s.get(0).attr("href"), rowData);
+		}
+		return noImgMap;
+	}
+	
+	public void parseGanjiSecond(Document document, Excel excel, String[] rowData){
+		//名称
+		Elements p1 = document.getElementsByClass("p1");
+		rowData[1] = p1.text();
+		//联系电话1
+		Elements btns = document.getElementsByClass("btn");
+		String gjalog = btns.get(0).attr("gjalog");
+		String phone1 = gjalog.substring(gjalog.indexOf("phone=") + 6, gjalog.indexOf("phone=") + 17);
+		rowData[2] = phone1;
+		//联系电话2
+		Elements cons = document.getElementsByClass("con");
+		if (cons != null) {
+			for (Element con : cons) {
+				Elements lis = con.getElementsByTag("li");
+				for (Element li : lis) {
+					Elements spans = li.getElementsByTag("span");
+					if (spans != null && spans.size() > 0 && "联系电话：".equals(spans.get(0).text())) {
+						Elements ps = li.getElementsByTag("p");
+						rowData[3] = ps.get(0).text();
+						break;
+					}
+				}
+			}
+		}
+		excel.insertRow(rowData);
 	}
 }

@@ -5,6 +5,8 @@ import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -37,17 +39,24 @@ public class MainView extends JFrame {
 	private JScrollPane toutiaoScroll;
 	private JComboBox toutiaoType;
 	
+	private JTextField ganjiFilePath, ganjiFileName, ganjiPages, ganjiUrl;
+	private JButton ganjiButton, ganjiStopButton;
+	private JTextArea ganjiOutPut;
+	private JScrollPane ganjiScroll;
+	
 	private boolean stopToutiao = false;
 	private boolean stop58 = false;
+	private boolean stopGanji = false;
 	
 	public MainView() throws HeadlessException {
 		super("数据采集神器");
 		init58Elements();
 		initToutiaoElements();
+		initGanjiElements();
 		initLayout();
 		//
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setSize(700, 700);
+		setSize(700, 900);
 		setResizable(false);
 		setVisible(true);
 	}
@@ -196,6 +205,51 @@ public class MainView extends JFrame {
 		toutiaoScroll = new JScrollPane(toutiaoOutPut);
 	}
 	
+	@SuppressWarnings("unchecked")
+	private void initGanjiElements() {
+		ganjiUrl = new JTextField();
+		ganjiUrl.setText("http://hz.ganji.com/jiatingzhuangxiu/");
+		ganjiPages = new JTextField(20);
+		ganjiPages.setText("1-20");
+		ganjiFilePath = new JTextField(20);
+		ganjiFilePath.setText("d:\\result\\");
+		ganjiFilePath.setEditable(false);
+		ganjiFileName = new JTextField(20);
+		ganjiFileName.setText("赶集.xlsx");
+		
+		ganjiButton = new JButton("开始采集");
+		ganjiButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new Thread(new Runnable() {
+					String url = ganjiUrl.getText() + "o";
+					public void run() {
+						ganjiButton.setText("采集中...");
+						ganjiButton.paintImmediately(getBounds());
+						ganjiButton.setEnabled(false);
+						ganjiOutPut.setText("赶集网开始采集数据。。。");
+						ganjiOutPut.paintImmediately(getBounds());
+						String[] pages = ganjiPages.getText().split("-");
+						startWorkGanji(url, Integer.valueOf(pages[0]), Integer.valueOf(pages[1]), ganjiFilePath.getText(), ganjiFileName.getText());
+						ganjiButton.setText("重新采集");
+						ganjiButton.setEnabled(true);
+						ganjiButton.paintImmediately(getBounds());
+					}
+				}).start();
+			}
+		});
+		
+		ganjiStopButton = new JButton("停止");
+		ganjiStopButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				stopGanji = true;
+			}
+		});
+		
+		ganjiOutPut = new JTextArea(8, 30);
+		ganjiOutPut.setEditable(true);
+		ganjiScroll = new JScrollPane(ganjiOutPut);
+	}
+	
 	private void initLayout() {
 		setLayout(new FlowLayout());
 		Box boxContainer;
@@ -204,6 +258,8 @@ public class MainView extends JFrame {
 		initLayout58(boxContainer);
 		//添加头条
 		initLayoutToutiao(boxContainer);
+		//添加赶集
+		initLayoutGanji(boxContainer);
 		add(boxContainer);
 	}
 
@@ -300,6 +356,50 @@ public class MainView extends JFrame {
 		outPutBox.add(buttonBox);
 		outPutBox.add(Box.createVerticalStrut(8));
 		outPutBox.add(toutiaoScroll);
+		box.add(labelBox);
+		box.add(Box.createHorizontalStrut(8));
+		box.add(textBox);
+		box.add(Box.createHorizontalStrut(8));
+		box.add(outPutBox);
+		//
+		boxContainer.add(header);
+		boxContainer.add(box);
+	}
+	
+	private void initLayoutGanji(Box boxContainer) {
+		Box labelBox, textBox, outPutBox, box, header, buttonBox, buttonBoxSub;
+		header = Box.createHorizontalBox();
+		header.add(new JLabel("赶集网采集"));
+		box = Box.createHorizontalBox();
+		labelBox = Box.createVerticalBox();
+		labelBox.add(new JLabel("赶集类型："));
+		labelBox.add(Box.createVerticalStrut(28));
+		labelBox.add(new JLabel("采集页数："));
+		labelBox.add(Box.createVerticalStrut(28));
+		labelBox.add(new JLabel("存档文件夹："));
+		labelBox.add(Box.createVerticalStrut(28));
+		labelBox.add(new JLabel("存档文件名："));
+		textBox = Box.createVerticalBox();
+		textBox.add(ganjiUrl);
+		textBox.add(Box.createVerticalStrut(8));
+		textBox.add(ganjiPages);
+		textBox.add(Box.createVerticalStrut(8));
+		textBox.add(ganjiFilePath);
+		textBox.add(Box.createVerticalStrut(8));
+		textBox.add(ganjiFileName);
+
+		buttonBoxSub = Box.createVerticalBox();
+		buttonBoxSub.add(ganjiButton);
+		
+		buttonBox = Box.createHorizontalBox();
+		buttonBox.add(buttonBoxSub);
+		buttonBox.add(Box.createHorizontalStrut(20));
+		buttonBox.add(ganjiStopButton);
+		
+		outPutBox = Box.createVerticalBox();
+		outPutBox.add(buttonBox);
+		outPutBox.add(Box.createVerticalStrut(8));
+		outPutBox.add(ganjiScroll);
 		box.add(labelBox);
 		box.add(Box.createHorizontalStrut(8));
 		box.add(textBox);
@@ -469,5 +569,38 @@ public class MainView extends JFrame {
 		excel.saveFile();
 		toutiaoOutPut.append(System.lineSeparator() + "头条采集完成，总共:" + excel.size() + "条");
 		toutiaoOutPut.paintImmediately(getBounds());
+	}
+	
+	public void startWorkGanji(String baseUrl, int fromPage, int endPage, String filePath, String fileName) {
+		MyHttpClient myHttpClient = new MyHttpClient();
+		Document document;
+		// 创建excel文档
+		String[] columnNames = { "标题", "客户名", "电话号码1", "电话号码2" };
+		Excel excel = new Excel(filePath, fileName, "ganji", columnNames);
+		// 创建一个解析器
+		PageParser parser = new PageParser();
+		stopToutiao = false;
+		try {
+			for (int i = fromPage; i <= endPage && !stopGanji; i++) {
+				System.out.println(baseUrl + i);
+				document = myHttpClient.get(baseUrl + i);
+				//解析列表
+				Map<String, String[]> secList = parser.parseGanjiList(document, excel);
+				//解析会员页面
+				for (Entry<String, String[]> item : secList.entrySet()) {
+					document = myHttpClient.get(item.getKey());
+					parser.parseGanjiSecond(document, excel, item.getValue());
+				}
+				ganjiOutPut.append(System.lineSeparator() + "第:" + i + "页采集完成");
+				ganjiOutPut.paintImmediately(getBounds());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		stopGanji = false;
+		// 数据存档
+		excel.saveFile();
+		ganjiOutPut.append(System.lineSeparator() + "赶集网采集完成，总共:" + excel.size() + "条");
+		ganjiOutPut.paintImmediately(getBounds());
 	}
 }
