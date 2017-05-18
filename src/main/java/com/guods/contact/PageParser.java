@@ -31,32 +31,43 @@ public class PageParser {
 		if (tbodys == null || tbodys.size() == 0) {
 			return null;
 		}
-		Element tbody = tbodys.get(0);
-		Elements trs = tbody.getElementsByTag("tr");
-		for (int i = 0; i < trs.size(); i++) {
-			//解析列表页面，获取列表信息，并存到excel文档
-			Elements tdivs = trs.get(i).getElementsByClass("tdiv");
-			if (tdivs.size() == 0) {
-				continue;
-			}
-			Element tdiv = trs.get(i).getElementsByClass("tdiv").get(0);
-			String desc = tdiv.text();
-			Element a = tdiv.getElementsByTag("a").get(0);
-			String title = a.text();
-			Element seller = tdiv.getElementsByClass("seller").get(0);
-			String sellerName = seller.text();
-			Element yuyueVertop = trs.get(i).getElementsByClass("yuyue_vertop").get(0);
-			String contact = yuyueVertop.attr("data-j4fe");
-			//excel插入记录，联系电话没有的数据不记录
-			if (contact != null && contact.trim() != "") {
-				String[] rowData = {title, desc, sellerName, contact};
-				excel.insertRow(rowData);
-			}
-			//在seller元素里获取公司网址，如果有公司网址则保存公司网址
-			Elements sellerAs = seller.getElementsByTag("a");
-			if (sellerAs != null && sellerAs.size() > 0) {
-				Element company = sellerAs.get(0);
-				companyUrlList.add(company.attr("href"));
+		for (Element tbody : tbodys) {
+			Elements trs = tbody.getElementsByTag("tr");
+			for (int i = 0; i < trs.size(); i++) {
+				//解析列表页面，获取列表信息，并存到excel文档
+				Elements tdivs = trs.get(i).getElementsByClass("tdiv");
+				Elements sellers = trs.get(i).getElementsByClass("seller");
+				if (sellers == null || sellers.size() < 1) {
+					continue;
+				}
+				Element seller = sellers.get(0);
+				if (tdivs.size() == 0) {
+					//在seller元素里获取公司网址，如果有公司网址则保存公司网址
+					Elements sellerAs = seller.getElementsByTag("a");
+					if (sellerAs != null && sellerAs.size() > 0) {
+						Element company = sellerAs.get(0);
+						companyUrlList.add(company.attr("href"));
+					}
+					continue;
+				}
+				Element tdiv = trs.get(i).getElementsByClass("tdiv").get(0);
+				String desc = tdiv.text();
+				Element a = tdiv.getElementsByTag("a").get(0);
+				String title = a.text();
+				String sellerName = seller.text();
+				Element yuyueVertop = trs.get(i).getElementsByClass("yuyue_vertop").get(0);
+				String contact = yuyueVertop.attr("data-j4fe");
+				//excel插入记录，联系电话没有的数据不记录
+				if (contact != null && contact.trim() != "") {
+					String[] rowData = {title, desc, sellerName, contact};
+					excel.insertRow(rowData);
+				}
+				//在seller元素里获取公司网址，如果有公司网址则保存公司网址
+				Elements sellerAs = seller.getElementsByTag("a");
+				if (sellerAs != null && sellerAs.size() > 0) {
+					Element company = sellerAs.get(0);
+					companyUrlList.add(company.attr("href"));
+				}
 			}
 		}
 		//返回公司网址，以便后续根据公司网址抓取页面，从公司页面获取联系人信息
@@ -73,35 +84,56 @@ public class PageParser {
 		if (document == null) {
 			return 1;
 		}
-		Elements w_990 = document.getElementsByClass("w_990");
-		if (w_990 != null && w_990.size() > 0) {
-			return 2;
-		}
 		Elements modBoxs = document.getElementsByClass("mod-box");
 		if (modBoxs == null || modBoxs.size() == 0) {
 			return 0;
 		}
-		String[] companyRowData = new String[7];
+		String[] companyRowData = new String[5];
 		//联系人信息存放在modBox中的，解析每个modBox
 		for (Element modBox : modBoxs) {
 			Elements lis = modBox.getElementsByTag("li");
-			if (lis == null || lis.size() == 0) {
-				return 1;
-			}
 			//取出每个li标签的字段信息
-			int min = lis.size() > companyRowData.length ? companyRowData.length : lis.size();
-			for (int i = 0; i < min; i++) {
-				Elements spans = lis.get(i).getElementsByTag("span");
-				if (spans == null || spans.size() == 0) {
-					continue;
+			for (int i = 0; i < lis.size(); i++) {
+				if (lis.get(i).text().contains("[建材]")) {
+					Elements as = lis.get(i).getElementsByTag("a");
+					if (as.size() >= 2) {
+						companyRowData[4] = as.get(1).text() + ";" + companyRowData[4];
+						continue;
+					}
 				}
-				Element span = spans.get(0);
-				companyRowData[i] = span.text();
+				if (lis.get(i).text().contains("商家名称：")) {
+					Elements spans = lis.get(i).getElementsByTag("span");
+					if (spans != null && spans.get(0).text() != null) {
+						companyRowData[0] = spans.get(0).text();
+						continue;
+					}
+				}
+				if (lis.get(i).text().contains("人：") || lis.get(i).text().contains("联&nbsp;&nbsp;系&nbsp;&nbsp;人")) {
+					Elements spans = lis.get(i).getElementsByTag("span");
+					if (spans != null && spans.get(0).text() != null) {
+						companyRowData[1] = spans.get(0).text();
+						continue;
+					}
+				}
+				if (lis.get(i).text().contains("联系电话：")) {
+					Elements spans = lis.get(i).getElementsByTag("span");
+					if (spans != null && spans.get(0).text() != null) {
+						companyRowData[2] = spans.get(0).text();
+						continue;
+					}
+				}
+				if (lis.get(i).text().contains("联系地址：")) {
+					Elements spans = lis.get(i).getElementsByTag("span");
+					if (spans != null && spans.get(0).text() != null) {
+						companyRowData[3] = spans.get(0).text();
+						continue;
+					}
+				}
 			}
-			//保存有效数据
-			if (companyRowData[1] != null && companyRowData[6] != null) {
-				excel.insertRow(companyRowData);
-			}
+		}
+		//保存有效数据
+		if (companyRowData[0] != null) {
+			excel.insertRow(companyRowData);
 		}
 		return 1;
 	}
@@ -133,7 +165,7 @@ public class PageParser {
 				Integer commentCount = dataUnit.getComments_count();
 				if (commentCount != null && commentCount >= toutiaoCommCount
 						&& (dataUnit.getTitle().contains(keyword) || keyword == null || keyword.trim() == "")) {
-					String[] rowData = {dataUnit.getTitle(), "http://www.toutiao.com/" + dataUnit.getSource_url(),
+					String[] rowData = {dataUnit.getTitle(), dataUnit.getSource_url(),
 							commentCount.toString(), ""};
 					if (!excel.contains(rowData[1])) {
 						excel.insertRow(rowData);
@@ -156,36 +188,51 @@ public class PageParser {
 	}
 	
 	public Map<String, String[]> parseGanjiList(Document document, Excel excel){
-		Map<String, String[]> noImgMap = new HashMap<String, String[]>();
+		Map<String, String[]> dataMap = new HashMap<String, String[]>();
+		if (document == null) {
+			return dataMap;
+		}
 		//有图的直接提取数据
 		Elements listImgs = document.getElementsByClass("list-img");
-		for (Element img : listImgs) {
-			String[] rowData = new String[3];
-			Elements f14s = img.getElementsByClass("f14");
-			rowData[0] = f14s.get(0).text();// 标题
-			Elements websites = img.getElementsByClass("website");
-			rowData[1] = websites.get(0).text();// 名称
-			Elements JTelPhoneSpans = img.getElementsByClass("J_tel_phone_span");
-			rowData[2] = JTelPhoneSpans.get(0).text();// 电话
-			excel.insertRow(rowData);
+		if (listImgs != null) {
+			for (Element img : listImgs) {
+				String[] rowData = new String[5];
+				Elements f14s = img.getElementsByClass("f14");
+				rowData[0] = f14s.get(0).text();// 标题
+				Elements websites = img.getElementsByClass("website");
+				rowData[1] = websites.get(0).text();// 名称
+				Elements JTelPhoneSpans = img.getElementsByClass("J_tel_phone_span");
+				rowData[2] = JTelPhoneSpans.get(0).text();// 电话
+				dataMap.put(ganjiUrl(f14s.get(0).attr("href")), rowData);
+			}
 		}
 		//没图的返回地址，进入网站提取数据
 		Elements listNoImgs = document.getElementsByClass("list-noimg");
-		for (Element noImg : listNoImgs) {
-			String[] rowData = new String[4];
-			Elements f14s = noImg.getElementsByClass("f14");
-			rowData[0] = f14s.get(0).text();// 标题
-			noImgMap.put("http://hz.ganji.com" + f14s.get(0).attr("href"), rowData);
+		if (listNoImgs != null) {
+			for (Element noImg : listNoImgs) {
+				String[] rowData = new String[5];
+				Elements f14s = noImg.getElementsByClass("f14");
+				rowData[0] = f14s.get(0).text();// 标题
+				dataMap.put(ganjiUrl(f14s.get(0).attr("href")), rowData);
+			}
 		}
-		return noImgMap;
+		return dataMap;
 	}
 	
 	public void parseGanjiSecond(Document document, Excel excel, String[] rowData){
 		//名称
 		Elements p1 = document.getElementsByClass("p1");
-		rowData[1] = p1.text();
+		if (p1 == null || p1.size() == 0) {
+			excel.insertRow(rowData);
+			return;
+		}
+		rowData[1] = p1.text().replace("扫码使用“赶集群组” 微信绑定“赶集叮咚” ", "");
 		//联系电话1
 		Elements btns = document.getElementsByClass("btn");
+		if (btns == null || btns.size() == 0) {
+			excel.insertRow(rowData);
+			return;
+		}
 		String gjalog = btns.get(0).attr("gjalog");
 		String phone1 = gjalog.substring(gjalog.indexOf("phone=") + 6, gjalog.indexOf("phone=") + 17);
 		rowData[2] = phone1;
@@ -199,11 +246,60 @@ public class PageParser {
 					if (spans != null && spans.size() > 0 && "联系电话：".equals(spans.get(0).text())) {
 						Elements ps = li.getElementsByTag("p");
 						rowData[3] = ps.get(0).text();
-						break;
+					}
+					if (spans != null && spans.size() > 0 && "联 系 人：".equals(spans.get(0).text())) {
+						Elements ps = li.getElementsByTag("p");
+						rowData[4] = ps.get(0).text();
 					}
 				}
 			}
 		}
 		excel.insertRow(rowData);
+	}
+	
+	public boolean parseQichacha(Document document, Excel excel){
+		try {
+			if (document == null) {
+				return false;
+			}
+			Elements srchLists = document.getElementsByClass("m_srchList");
+			if (srchLists == null || srchLists.size() == 0) {
+				return false;
+			}
+			Elements trs = srchLists.get(0).getElementsByTag("tr");
+			for (Element tr : trs) {
+				Elements tds = tr.getElementsByTag("td");
+				try {
+					String[] rowData = new String[2];
+					rowData[0] = tds.get(1).text();
+					Elements as = tds.get(1).getElementsByTag("a");
+					String url = as.get(0).attr("href");
+					rowData[1] = url;
+//					System.out.println(tds.get(1).text());
+//					System.out.println(url);
+					excel.insertRow(rowData);
+				} catch (IndexOutOfBoundsException e) {
+					continue;
+				}
+			}
+			return true;
+		} catch (Exception e) {
+			excel.saveFile();
+			e.printStackTrace();
+			return true;
+		}
+	}
+	
+	private String ganjiUrl(String url){
+		if (url.startsWith("http://")) {
+			return url;
+		}
+		if (url.startsWith("//")) {
+			return "http:" + url;
+		}
+		if (url.startsWith("/")) {
+			return "http://hz.ganji.com" + url;
+		}
+		return url;
 	}
 }

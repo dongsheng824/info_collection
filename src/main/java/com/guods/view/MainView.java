@@ -63,9 +63,9 @@ public class MainView extends JFrame {
 
 	private void init58Elements() {
 		preUrl = new JTextField(20);
-		preUrl.setText("http://hz.58.com/zhuangxiu/pn");
+		preUrl.setText("http://jx.58.com/jiancai/pn");
 		postUrl = new JTextField(20);
-		postUrl.setText("/?PGTID=0d300078-0004-f66b-fd74-1a60792d6344&ClickID=1");
+		postUrl.setText("/?PGTID=0d3000ea-001f-190a-1f5e-59fccbab10bd&ClickID=2&qq-pf-to=pcqq.c2c");
 		pages = new JTextField(20);
 		pages.setText("1-20");
 		filePath = new JTextField(20);
@@ -419,7 +419,7 @@ public class MainView extends JFrame {
 		// 创建excel文档
 		String[] columnNames = { "标题", "描述", "名字", "联系方式" };
 		Excel excel = new Excel(filePath, fileName1, "contact", columnNames);
-		String[] companyColumnNames = { "公司名", "客户名", "电子邮箱", "联系电话1", "联系电话2", "QQ", "地址" };
+		String[] companyColumnNames = { "公司名", "联系人", "联系电话", "地址", "服务内容"};
 		Excel companyExcel = new Excel(filePath, fileName2, "companyContact", companyColumnNames);
 		// 创建一个解析器
 		PageParser parser = new PageParser();
@@ -446,10 +446,7 @@ public class MainView extends JFrame {
 					}
 					// 获取并解析公司页面
 					if (url != null && url.trim() != "") {
-						// long time1 = System.currentTimeMillis();
 						Document companyDocument = myHttpClient.get(url);
-						// long time2 = System.currentTimeMillis();
-						// System.out.println("time1:" + (time2 - time1));
 						int parserResult = parser.parseCompanyPage(companyDocument, companyExcel);
 						if (parserResult == 0) {
 							outPut.append(System.lineSeparator() + "会员企业网址获取联系人信息错误，请用浏览器打开网址查看！");

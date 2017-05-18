@@ -30,6 +30,8 @@ public class MyHttpClient {
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (Exception e){
+			System.out.println(e.getMessage());
 		}
 		return null;
 	}
@@ -47,6 +49,26 @@ public class MyHttpClient {
 					.header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36")
 					.header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
 					.cookies(cookies)
+					.get();
+		}catch (HttpStatusException e0){
+			System.out.println(e0.getMessage());
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public Document qichachaGet(String url){
+		String cookies = "acw_tc=AQAAAKcM/2ttXgoAGZDqemtMH8c4rbzS; UM_distinctid=15c157eec3f8-0d178768b03694-323f5c0f-1fa400-15c157eec4097b; _uab_collina=149500925904404503538663; gr_user_id=a3bb30b3-c8aa-4310-8128-79ded86bc298; _umdata=486B7B12C6AA95F2F011E74167B6A7C10B3A099608ADF66F4294A5630952F38B851E8050B835297FCD43AD3E795C914C6B665995F5FBB80D1198CED4B011A83A; PHPSESSID=gk1eh5h0m60rt4l1157ocoafm6; CNZZDATA1254842228=1174307543-1495004895-%7C1495004895; gr_session_id_9c1eb7420511f8b2=e22cf959-4423-4ee4-8880-d7c18bb90d60";
+		try {
+			return Jsoup.connect(url)
+					.ignoreContentType(true)
+					.header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36")
+					.header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
+					.header("Cookie", cookies)
+					.header("Cache-Control", "max-age=0")
+					.header("Upgrade-Insecure-Requests", "1")
 					.get();
 		}catch (HttpStatusException e0){
 			System.out.println(e0.getMessage());

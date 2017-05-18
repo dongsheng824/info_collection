@@ -129,7 +129,6 @@ public class DataUnit {
 	private Object display;
 	private String track_url;
 	private String ad_track_url;
-	
     
 	public String getAd_track_url() {
 		return ad_track_url;
