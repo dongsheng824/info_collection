@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFFont;
@@ -28,6 +29,10 @@ public class Excel {
 	private XSSFCellStyle titleStyle, commonStyle;
 	private int rowCount;	//总记录数
 	
+	
+	public Excel() {
+		super();
+	}
 	/**
 	 * 
 	 * @param file 文件名
@@ -39,6 +44,28 @@ public class Excel {
 		this.filePath = filePath;
 		this.fileName = fileName;
 		newSheet(sheetName, columnNames);
+	}
+	public Excel readExcel(String filePath, String fileName) throws InvalidFormatException, IOException {
+		this.filePath = filePath;
+		this.fileName = fileName;
+		this.workbook = new XSSFWorkbook(new File(filePath + fileName));
+		this.sheet = workbook.getSheetAt(0);
+		return this;
+	}
+	
+	public String readUnit(int rownum, int colnum){
+		XSSFRow row = sheet.getRow(rownum);
+		XSSFCell cell = row.getCell(colnum);
+		return cell.getStringCellValue();
+	}
+	
+	public void writeUnit(int rownum, int colnum, String value){
+		XSSFRow row = sheet.getRow(rownum);
+		if (row == null) {
+			row = sheet.createRow(rownum);
+		}
+		XSSFCell cell = row.createCell(colnum);
+		cell.setCellValue(value);
 	}
 	/**
 	 * 初始化excel表格，生成标题（第一行数据）
@@ -94,10 +121,9 @@ public class Excel {
 			if (!fileDir.isDirectory()) {
 				fileDir.mkdir();
 			}
-			if (file.exists()) {
-				file.delete();
+			if (!file.exists()) {
+				file.createNewFile();
 			}
-			file.createNewFile();
 			FileOutputStream fileOutputStream = new FileOutputStream(file);
 			workbook.write(fileOutputStream);
 		} catch (FileNotFoundException e) {
@@ -113,7 +139,7 @@ public class Excel {
 	 * @return
 	 */
 	public int size() {
-		return rowCount;
+		return sheet.getLastRowNum();
 	}
 	
 	public boolean contains(String URL){

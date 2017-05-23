@@ -1,5 +1,9 @@
 package com.guods.contact;
 
+import java.io.IOException;
+import java.util.concurrent.ThreadLocalRandom;
+
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.jsoup.nodes.Document;
 /**
  * 企查查数据采集  网站分页最多只返回50页，超过500条的数据增加分类条件采集
@@ -85,7 +89,7 @@ public class Qichacha {
 				document = myHttpClient.qichachaGet(newUrl);
 				boolean result = parser.parseQichacha(document, excel);
 				try {
-					Thread.sleep(1000);
+					Thread.sleep(20000);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -95,6 +99,36 @@ public class Qichacha {
 			}
 		} finally{
 			excel.saveFile();
+		}
+	}
+	
+	public void getRelContent(String filePath, String fileName, String resultPathName) throws InvalidFormatException, IOException{
+		Excel excel = new Excel().readExcel(filePath, fileName);
+		int size = excel.size();
+		String[] columnNames = {"URL", "地址", "经营范围"};
+		Excel resultExcel = new Excel(filePath, resultPathName, "result", columnNames);
+		MyHttpClient myHttpClient = new MyHttpClient();
+		PageParser pageParser = new PageParser();
+		String url;
+		ThreadLocalRandom random = ThreadLocalRandom.current();
+		Document document = null;
+		for (int i = 0; i < size; i++) {
+			url = "http://www.qichacha.com" + excel.readUnit(i, 0);
+			resultExcel.writeUnit(i + 1, 0, url);
+			try {
+				document = myHttpClient.qichachaGet(url);
+			} catch (Exception e1) {
+				System.out.println("url" + "：地址访问错误！");
+				continue;
+			}
+			System.out.println("http://www.qichacha.com" + excel.readUnit(i, 0));
+			pageParser.parseQichachaDet(document, resultExcel, i + 1);
+			resultExcel.saveFile();
+			try {
+				Thread.sleep((long) (120*1000*random.nextFloat()));
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }

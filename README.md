@@ -24,3 +24,6 @@
 	实际上请求参数中as和cp并没有用到，只要修改请求参数max_behot_time就可以获取到数据了，这个应该是头条服务器端的一个bug吧，并没有真正校验as和cp。
 	com.guods.view.MainView：一个简单的swing界面。由于第一次用swing，界面比较寒碜，只要功能出来就行。
 	com.guods.toutiao.model：今日头条json中需要解析的各种类，根据json串来写即可
+3、采集赶集网的客户信息
+3、采集赶集网的客户信息
+3、采集赶集网的客户信息
