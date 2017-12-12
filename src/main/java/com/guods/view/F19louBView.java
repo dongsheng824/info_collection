@@ -18,7 +18,7 @@ import org.jsoup.nodes.Document;
 
 import com.guods.contact.Excel;
 import com.guods.contact.F19louBParser;
-import com.guods.contact.MyHttpClient;
+import com.guods.contact.JsoupHttpClient;
 import com.guods.contact.Parser;
 
 /**
@@ -145,7 +145,7 @@ public class F19louBView extends JFrame {
 	@SuppressWarnings("unchecked")
 	public void startWork(int fromPage, int endPage, String preUrl, String postUrl, String filePath, String fileName) {
 		StringBuffer urlBuffer = new StringBuffer();
-		MyHttpClient myHttpClient = new MyHttpClient();
+		JsoupHttpClient myHttpClient = new JsoupHttpClient();
 		Document document;
 		List<String[]> rowDataList;
 		// 创建excel文档
@@ -171,7 +171,8 @@ public class F19louBView extends JFrame {
 				}
 				if (rowData[0] != null && rowData[0].trim() != "") {
 					Document detDocument = myHttpClient.get(rowData[0]);
-					parser.parseDet(detDocument, excel, rowData);
+					String[] parseResult = parser.parseDet(detDocument, rowData);
+					excel.insertRow(parseResult);
 					outPut.append(System.lineSeparator() + "已采集" + excel.size() + "条");
 					outPut.paintImmediately(getBounds());
 					try {

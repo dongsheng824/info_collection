@@ -9,7 +9,7 @@ import org.jsoup.select.Elements;
 
 public class F19louBParser implements Parser {
 
-	public Object parseList(Document document) {
+	public List<String[]> parseList(Document document) {
 		List<String[]> list = new ArrayList<String[]>();
 		Elements lists = document.getElementsByClass("list_0");
 		Elements lis = lists.get(0).getElementsByTag("li");
@@ -23,9 +23,9 @@ public class F19louBParser implements Parser {
 		return list;
 	}
 
-	public void parseDet(Document document, Excel excel, String[] rowData) {
+	public String[] parseDet(Document document, String[] rowData) {
 		if (document == null) {
-			return;
+			return rowData;
 		}
 		Elements conts = document.getElementsByClass("post-cont");
 		if (conts.size() == 0) {
@@ -33,7 +33,7 @@ public class F19louBParser implements Parser {
 		}else {
 			rowData[2] = conts.get(0).getElementsByTag("div").get(0).text();
 		}
-		excel.insertRow(rowData);
+		return rowData;
 	}
 
 }

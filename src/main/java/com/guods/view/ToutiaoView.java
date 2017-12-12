@@ -18,7 +18,7 @@ import org.jsoup.nodes.Document;
 
 import com.guods.contact.AsCpGenerator;
 import com.guods.contact.Excel;
-import com.guods.contact.MyHttpClient;
+import com.guods.contact.JsoupHttpClient;
 import com.guods.contact.PageParser;
 import com.guods.toutiao.model.AsCp;
 
@@ -36,6 +36,7 @@ public class ToutiaoView extends JFrame {
 	private JScrollPane scroll;
 	private JComboBox type;
 	private volatile boolean stop = false;
+	private String cookies = "uuid=w:d7dcefd0fde74bc8a90c0667364c5f30;UM_distinctid=15b23c7417a1ed-07781e3212b944-6a11157a-1fa400-15b23c7417b22b;utm_source=toutiao;tt_webid=57234957546;_ga=GA1.2.1673071305.1490953913";
 	
 	public ToutiaoView() throws HeadlessException {
 		super("今日头条数据采集");
@@ -205,7 +206,7 @@ public class ToutiaoView extends JFrame {
 	
 	public void startWorkToutiao(int count, String url, String filePath, String fileName, int toutiaoCommCount, String keyword) {
 		StringBuffer urlBuffer = new StringBuffer();
-		MyHttpClient myHttpClient = new MyHttpClient();
+		JsoupHttpClient myHttpClient = new JsoupHttpClient();
 		String preUrl;
 		Document document;
 		boolean tag;
@@ -235,7 +236,7 @@ public class ToutiaoView extends JFrame {
 					.append("&tadrequire=true")
 					.append("&as=").append(asCp.getAs()).append("&cp=").append(asCp.getCp());
 				System.out.println(urlBuffer.toString());
-				document = myHttpClient.jsonGet(urlBuffer.toString());
+				document = myHttpClient.cookieGet(urlBuffer.toString(), cookies);
 				tag = parser.parseToutiao(document, excel, toutiaoCommCount, false, keyword);
 				if (tag) {
 					outPut.append(System.lineSeparator() + "已采到:" + (excel.size() - 1) + "条");
@@ -257,7 +258,7 @@ public class ToutiaoView extends JFrame {
 	
 	public void startSearchToutiao(String preUrl, int count, String filePath, String fileName, int toutiaoCommCount, String keyword) {
 		StringBuffer urlBuffer = new StringBuffer();
-		MyHttpClient myHttpClient = new MyHttpClient();
+		JsoupHttpClient myHttpClient = new JsoupHttpClient();
 		Document document;
 		boolean hasMore = true;
 		// 创建excel文档
@@ -277,7 +278,7 @@ public class ToutiaoView extends JFrame {
 				urlBuffer.append(preUrl).append("&offset=").append(i * 20)
 					.append("&keyword=").append(keyword);
 				System.out.println(urlBuffer.toString());
-				document = myHttpClient.jsonGet(urlBuffer.toString());
+				document = myHttpClient.cookieGet(urlBuffer.toString(), cookies);
 				hasMore = parser.parseToutiao(document, excel, toutiaoCommCount, true, keyword);
 				if (hasMore) {
 					outPut.append(System.lineSeparator() + "已采到:" + (excel.size() - 1) + "条");

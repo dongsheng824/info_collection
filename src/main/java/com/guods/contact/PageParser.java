@@ -25,7 +25,7 @@ public class PageParser {
 	 * @param document 获取的http页面
 	 * @param excel 提取客户信息存到excel
 	 */
-	public List<String> parse58PageList(Document document, Excel excel){
+	public List<String> parse58PageList(Document document, Excel excel, String url){
 		List<String> companyUrlList = new ArrayList<String>();
 		if (document == null) {
 			return null;
@@ -62,7 +62,7 @@ public class PageParser {
 				String contact = yuyueVertop.attr("data-j4fe");
 				//excel插入记录，联系电话没有的数据不记录
 				if (contact != null && contact.trim() != "") {
-					String[] rowData = {title, desc, sellerName, contact};
+					String[] rowData = {title, desc, sellerName, contact, url};
 					excel.insertRow(rowData);
 				}
 				//在seller元素里获取公司网址，如果有公司网址则保存公司网址
@@ -83,7 +83,7 @@ public class PageParser {
 	 * @param document
 	 * @param excel
 	 */
-	public int parse58PageDet(Document document, Excel excel){
+	public int parse58PageDet(Document document, Excel excel, String url){
 		if (document == null) {
 			return 1;
 		}
@@ -91,7 +91,7 @@ public class PageParser {
 		if (modBoxs == null || modBoxs.size() == 0) {
 			return 0;
 		}
-		String[] companyRowData = new String[5];
+		String[] companyRowData = new String[6];
 		//联系人信息存放在modBox中的，解析每个modBox
 		for (Element modBox : modBoxs) {
 			Elements lis = modBox.getElementsByTag("li");
@@ -134,6 +134,8 @@ public class PageParser {
 				}
 			}
 		}
+		//添加url
+		companyRowData[5] = url;
 		//保存有效数据
 		if (companyRowData[0] != null) {
 			excel.insertRow(companyRowData);

@@ -1,5 +1,7 @@
 package com.guods.contact;
 
+import java.util.List;
+
 import org.jsoup.nodes.Document;
 
 /**
@@ -11,7 +13,7 @@ import org.jsoup.nodes.Document;
  */
 public interface Parser {
 
-	Object parseList(Document document);
-	void parseDet(Document document, Excel excel, String[] rowData);
+	List<String[]> parseList(Document document);
+	String[] parseDet(Document document, String[] rowData);
 	
 }

@@ -17,7 +17,7 @@ import javax.swing.JTextField;
 import org.jsoup.nodes.Document;
 
 import com.guods.contact.Excel;
-import com.guods.contact.MyHttpClient;
+import com.guods.contact.JsoupHttpClient;
 import com.guods.contact.PageParser;
 
 /**
@@ -150,13 +150,13 @@ public class F58View extends JFrame {
 	public void startWork(int fromPage, int endPage, String preUrl, String postUrl, String filePath, String fileName1,
 			String fileName2) {
 		StringBuffer urlBuffer = new StringBuffer();
-		MyHttpClient myHttpClient = new MyHttpClient();
+		JsoupHttpClient myHttpClient = new JsoupHttpClient();
 		Document document;
 		List<String> companyList;
 		// 创建excel文档
-		String[] columnNames = { "标题", "描述", "名字", "联系方式" };
+		String[] columnNames = { "标题", "描述", "名字", "联系方式", "URL"};
 		Excel excel = new Excel(filePath, fileName1, "contact", columnNames);
-		String[] companyColumnNames = { "公司名", "联系人", "联系电话", "地址", "服务内容"};
+		String[] companyColumnNames = { "公司名", "联系人", "联系电话", "地址", "服务内容", "URL"};
 		Excel companyExcel = new Excel(filePath, fileName2, "companyContact", companyColumnNames);
 		// 创建一个解析器
 		PageParser parser = new PageParser();
@@ -171,7 +171,7 @@ public class F58View extends JFrame {
 			// 访问url，获取document
 			document = myHttpClient.get(urlBuffer.toString());
 			// 解析document，并获得公司页面列表
-			companyList = parser.parse58PageList(document, excel);
+			companyList = parser.parse58PageList(document, excel, urlBuffer.toString());
 			outPut.append(System.lineSeparator() + "第" + i + "页非会员采集完成。。。");
 			outPut.paintImmediately(getBounds());
 
@@ -184,7 +184,7 @@ public class F58View extends JFrame {
 					// 获取并解析公司页面
 					if (url != null && url.trim() != "") {
 						Document companyDocument = myHttpClient.get(url);
-						int parserResult = parser.parse58PageDet(companyDocument, companyExcel);
+						int parserResult = parser.parse58PageDet(companyDocument, companyExcel, url);
 						if (parserResult == 0) {
 							outPut.append(System.lineSeparator() + "会员企业网址获取联系人信息错误，请用浏览器打开网址查看！");
 							outPut.append(System.lineSeparator() + url);

@@ -18,7 +18,7 @@ import org.jsoup.nodes.Document;
 
 import com.guods.contact.Excel;
 import com.guods.contact.GanjiParser;
-import com.guods.contact.MyHttpClient;
+import com.guods.contact.JsoupHttpClient;
 import com.guods.contact.Parser;
 
 /**
@@ -140,7 +140,7 @@ public class GanjiView extends JFrame {
 	}
 	
 	public void startWorkGanji(String baseUrl, int fromPage, int endPage, String filePath, String fileName) {
-		MyHttpClient myHttpClient = new MyHttpClient();
+		JsoupHttpClient myHttpClient = new JsoupHttpClient();
 		Document document;
 		// 创建excel文档
 		String[] columnNames = { "标题", "客户名", "电话号码1", "电话号码2", "联系人", "URL"};
@@ -157,7 +157,8 @@ public class GanjiView extends JFrame {
 				//解析会员页面
 				for (String[] item : secList) {
 					document = myHttpClient.get(item[5]);
-					parser.parseDet(document, excel, item);
+					String[] parseResult = parser.parseDet(document, item);
+					excel.insertRow(parseResult);
 				}
 				outPut.append(System.lineSeparator() + "第:" + i + "页采集完成");
 				outPut.paintImmediately(getBounds());

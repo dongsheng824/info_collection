@@ -9,7 +9,7 @@ import org.jsoup.select.Elements;
 
 public class GanjiParser implements Parser {
 
-	public Object parseList(Document document) {
+	public List<String[]> parseList(Document document) {
 		List<String[]> list = new ArrayList<String[]>();
 		if (document == null) {
 			return list;
@@ -43,19 +43,17 @@ public class GanjiParser implements Parser {
 		return list;
 	}
 
-	public void parseDet(Document document, Excel excel, String[] rowData) {
+	public String[] parseDet(Document document, String[] rowData) {
 		//名称
 		Elements p1 = document.getElementsByClass("p1");
 		if (p1 == null || p1.size() == 0) {
-			excel.insertRow(rowData);
-			return;
+			return rowData;
 		}
 		rowData[1] = p1.text().replace("扫码使用“赶集群组” 微信绑定“赶集叮咚” ", "");
 		//联系电话1
 		Elements btns = document.getElementsByClass("btn");
 		if (btns == null || btns.size() == 0) {
-			excel.insertRow(rowData);
-			return;
+			return rowData;
 		}
 		String gjalog = btns.get(0).attr("gjalog");
 		String phone1 = gjalog.substring(gjalog.indexOf("phone=") + 6, gjalog.indexOf("phone=") + 17);
@@ -78,7 +76,7 @@ public class GanjiParser implements Parser {
 				}
 			}
 		}
-		excel.insertRow(rowData);
+		return rowData;
 	}
 
 	/**

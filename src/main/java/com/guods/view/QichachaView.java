@@ -16,7 +16,7 @@ import javax.swing.JTextField;
 import org.jsoup.nodes.Document;
 
 import com.guods.contact.Excel;
-import com.guods.contact.MyHttpClient;
+import com.guods.contact.JsoupHttpClient;
 import com.guods.contact.PageParser;
 
 /**
@@ -32,6 +32,7 @@ public class QichachaView extends JFrame {
 	private JTextArea outPut;
 	private JScrollPane scroll;
 	private volatile boolean stop = false;
+	private String cookies = "acw_tc=AQAAAClHqy0uFQEAJB15fcPqhrhSTRVZ; gr_user_id=20450478-428d-4e84-9e47-c8570c35f0e6; UM_distinctid=15c249977dc9ec-0e66f796822e56-323f5c0f-1fa400-15c249977ddf01; _uab_collina=149526265733670429219309; _umdata=486B7B12C6AA95F2C03AF16645E603B16EC0C3F786F9D0267F8603ABB8B5997E6AD6ACFF2D01FF50CD43AD3E795C914C583A8F88C6F7B8B88B863617091A8254; PHPSESSID=4j85auikbilq17grtrit6oabv3; CNZZDATA1254842228=538662836-1495258947-%7C1495275147; gr_session_id_9c1eb7420511f8b2=2f06a850-e7c0-45e8-a1cd-21f3bed5d89c";
 	
 	public QichachaView() throws HeadlessException {
 		super("企查查数据采集");
@@ -138,7 +139,7 @@ public class QichachaView extends JFrame {
 		String[] columnNames = {"内容", "URL"};
 		Excel excel = new Excel("D:\\result\\", "企查查数据（续存2017）.xlsx", "sheet1", columnNames);
 		try {
-			MyHttpClient myHttpClient = new MyHttpClient();//list-noimg,list-img
+			JsoupHttpClient myHttpClient = new JsoupHttpClient();//list-noimg,list-img
 			//公司状态
 			String[] status = {"&statusCode=10", "&statusCode=20", "&statusCode=60", "&statusCode=90", "&statusCode=99"};
 			//公司年份
@@ -176,7 +177,7 @@ public class QichachaView extends JFrame {
 				for (int j = 1; j < 51; j++) {
 					String newUrl = url + status[1] + "&startDate=2017" + industryCodes[k] + "&p=" + j;
 					System.out.println(newUrl);
-					document = myHttpClient.qichachaGet(newUrl);
+					document = myHttpClient.qichachaGet(newUrl, cookies);
 					boolean result = parser.parseQichacha(document, excel);
 					try {
 						Thread.sleep(1000);
@@ -192,7 +193,7 @@ public class QichachaView extends JFrame {
 			for (int j = 1; j < 51 && !stop; j++) {
 				String newUrl = url + status[1] + "&subindustrycode=51" + "&startDate=2017" + "&industrycode=F" + "&p=" + j;
 				System.out.println(newUrl);
-				document = myHttpClient.qichachaGet(newUrl);
+				document = myHttpClient.qichachaGet(newUrl, cookies);
 				boolean result = parser.parseQichacha(document, excel);
 				try {
 					Thread.sleep(1000);
@@ -205,7 +206,7 @@ public class QichachaView extends JFrame {
 			}
 			for (int j = 1; j < 51 && !stop; j++) {
 				String newUrl = url + status[1] + "&subindustrycode=52" + "&startDate=2017" + "&industrycode=F" + "&p=" + j;
-				document = myHttpClient.qichachaGet(newUrl);
+				document = myHttpClient.qichachaGet(newUrl, cookies);
 				boolean result = parser.parseQichacha(document, excel);
 				try {
 					Thread.sleep(20000);
