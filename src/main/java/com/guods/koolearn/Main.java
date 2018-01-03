@@ -11,14 +11,15 @@ public class Main {
 	public static void main(String[] args) throws InterruptedException {
 		FileManager fileManager = new FileManager("D:/koolearn");
 		Scrow scrow = new Scrow();
-		System.setProperty("webdriver.chrome.driver", "D:\\chromedriver\\chromedriver.exe");
+		System.setProperty("webdriver.chrome.driver", "D:\\chromedriver\\chromedriver2.29.exe");
 		WebDriver webDriver = new ChromeDriver();
-		webDriver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+		webDriver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
 		
 		String preUrl = "http://www.koolearn.com/shiti/st-1-";
 		String postUrl = ".html";
-		for (int i = 40000; i < 40005; i++) {
-			scrow.getQuestion(fileManager, webDriver, preUrl + i + postUrl);
+		boolean result = true;
+		for (int i = 589116; i <= 589116 && result; i++) {
+			result = scrow.getQuestion(fileManager, webDriver, preUrl + i + postUrl);
 		}
 	}
 }

@@ -30,16 +30,23 @@ public class Scrow {
 		regex = ".*>.*>.*>";
 		pattern = Pattern.compile(regex);
 	}
-	public void getQuestion(FileManager fileManager, WebDriver webDriver, String url){
+	public boolean getQuestion(FileManager fileManager, WebDriver webDriver, String url){
 		String paperFile, question, answer;
 		webDriver.get(url);
-		WebElement iBread = webDriver.findElement(By.className("i-bread"));
+		WebElement iBread = null;
+		try {
+			iBread = webDriver.findElement(By.className("i-bread"));
+		} catch (Exception e) {
+			System.out.println(Thread.currentThread().getName() + "----:题目不存在：" + url);
+			return true;
+		}
 		String fileName = iBread.getText();
 		Matcher matcher = pattern.matcher(fileName);
 		matcher.find();
 		fileName = matcher.group(0);
 		fileName = fileName.substring(0, fileName.lastIndexOf('>'))
 				.replace(" ", "")
+				.replace("<", "")
 				.replace(">", "_");
 		paperFile = fileManager.getPaperFile(fileName + ".txt");
 		WebElement panel = webDriver.findElement(By.className("i-panel"));
@@ -64,6 +71,7 @@ public class Scrow {
 		}
 		fileManager.appendContent(paperFile, "------------下一题------------");
 		fileManager.appendContent(paperFile, System.lineSeparator());
+		return true;
 	}
 	
 	public String getImage(FileManager fileManager, String imgUrl, String fileExt){
@@ -86,16 +94,16 @@ public class Scrow {
 			    out.write(i);  
 			}  
 			out.close();
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			return null;
 		}  finally {
 			try {
-				out.close();
-				in.close();
+				if (out != null) {
+					out.close();
+				}
+				if (in != null) {
+					in.close();
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -148,9 +156,16 @@ public class Scrow {
 		if (imageUrls == null || imageUrls.size() == 0) {
 			return html;
 		}
+		String baseUrl = "//picflow.koolearn.com";
 		for (String imageUrl : imageUrls) {
 			fileExt = imageUrl.substring(imageUrl.lastIndexOf("."));
+			if (!imageUrl.contains(baseUrl)) {
+				imageUrl = baseUrl + imageUrl;
+			}
 			imageFileName = getImage(fileManager, "http:" + imageUrl, fileExt);
+			if (imageFileName == null) {
+				continue;
+			}
 			html = html.replace(imageUrl, imageFileName);
 		}
 		return html;
